@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/transparent">
+
+    <android.support.design.widget.AppBarLayout
+        android:background="@color/transparent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            app:cardBackgroundColor="#f6f6f5"
+            app:layout_scrollFlags="scroll|enterAlways">
+
+            <ImageView
+                android:id="@+id/img_home_page_online"
+                android:layout_gravity="center_vertical|start"
+                android:src="@drawable/ic_home"
+                android:layout_width="30dp"
+                android:layout_height="30dp" />
+
+            <android.support.v7.widget.SearchView
+                android:layout_gravity="center_horizontal"
+                app:defaultQueryHint="@string/search_song"
+                android:background="@color/transparent"
+                app:queryHint="@string/search_song"
+                app:searchIcon="@drawable/ic_search"
+                app:closeIcon="@drawable/ic_close"
+                app:voiceIcon="@drawable/ic_voice_search"
+                android:id="@+id/sv_searchSongOnline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <ImageView
+                android:id="@+id/img_playAllSongOnline"
+                android:layout_gravity="center_vertical|end"
+                android:src="@drawable/ic_play_all"
+                android:layout_width="30dp"
+                android:layout_height="30dp" />
+
+        </android.support.v7.widget.CardView>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v7.widget.RecyclerView
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:orientation="vertical"
+        app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+        android:id="@+id/rvMainSongOnline"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:listitem="@layout/item_song"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:background="#fff"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:spanCount="2"
+        android:orientation="vertical"
+        app:layoutManager="android.support.v7.widget.StaggeredGridLayoutManager"
+        android:id="@+id/rvTopic"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:listitem="@layout/item_topic"/>
+
+    <!--loading in layout-->
+    <FrameLayout
+        android:elevation="10dp"
+        android:id="@+id/fl_loading"
+        android:focusable="true"
+        android:clickable="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#a0423e3e">
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|center_vertical"
+            app:cardCornerRadius="25dp"
+            app:contentPadding="20dp"
+            app:cardElevation="5dp"
+            android:layout_marginStart="35dp"
+            android:layout_marginEnd="35dp"  >
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <pl.droidsonroids.gif.GifImageView
+                    android:layout_gravity="center_horizontal"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:src="@drawable/ic_loading"/>
+
+                <TextView
+                    android:layout_gravity="center_horizontal"
+                    android:textSize="18dp"
+                    android:text="Đang xử lý..."
+                    android:textColor="#000"
+                    android:textStyle="bold|italic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+        </android.support.v7.widget.CardView>
+
+    </FrameLayout>
+
+</android.support.design.widget.CoordinatorLayout>

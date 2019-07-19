@@ -1,100 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/bts_song_controller"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/bts_song_controller"
-    android:background="@drawable/border_rounded"
-    app:behavior_peekHeight="70dp"
+    android:background="@color/transparent"
+    app:behavior_peekHeight="60dp"
     app:layout_behavior="@string/bottom_sheet_behavior">
 
+    <de.hdodenhof.circleimageview.CircleImageView
+        app:civ_border_width="2dp"
+        app:civ_border_color="@color/colorAccent"
+        android:id="@+id/img_avatar_song_ctr"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@drawable/ic_music"
+        android:src="@drawable/ic_music"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <android.support.constraint.ConstraintLayout
+        android:id="@+id/cl_container_song_ctr"
+        android:clickable="true"
+        tools:background="@tools:sample/avatars"
+        android:backgroundTint="#9f080808"
+        android:backgroundTintMode="src_over"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp">
+        android:padding="10dp"
+        app:layout_constraintTop_toBottomOf="@id/img_avatar_song_ctr">
 
         <ImageView
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:src="@drawable/ic_music"
-            android:background="@drawable/ic_music"
-            android:id="@+id/img_avatar_song_ctr"
-            android:layout_width="50dp"
-            android:layout_height="50dp" />
-
-        <ImageView
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/img_avatar_song_ctr"
+            android:id="@+id/img_prev_song_ctr"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/ic_prev"
             app:layout_constraintBottom_toTopOf="@id/sb_time_song_ctr"
             app:layout_constraintEnd_toStartOf="@id/img_play_song_ctr"
-            android:id="@+id/img_prev_song_ctr"
-            android:src="@drawable/ic_prev"
-            android:layout_width="30dp"
-            android:layout_height="30dp" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <ImageView
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/img_prev_song_ctr"
+            android:id="@+id/img_play_song_ctr"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/ic_play"
             app:layout_constraintBottom_toTopOf="@id/sb_time_song_ctr"
             app:layout_constraintEnd_toStartOf="@id/img_next_song_ctr"
-            android:id="@+id/img_play_song_ctr"
-            android:src="@drawable/ic_play"
-            android:layout_width="30dp"
-            android:layout_height="30dp" />
+            app:layout_constraintStart_toEndOf="@id/img_prev_song_ctr" />
 
         <ImageView
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/img_play_song_ctr"
+            android:id="@+id/img_next_song_ctr"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/ic_next"
             app:layout_constraintBottom_toTopOf="@id/sb_time_song_ctr"
             app:layout_constraintEnd_toEndOf="parent"
-            android:id="@+id/img_next_song_ctr"
-            android:src="@drawable/ic_next"
-            android:layout_width="30dp"
-            android:layout_height="30dp" />
+            app:layout_constraintStart_toEndOf="@id/img_play_song_ctr" />
 
         <SeekBar
-            android:layout_marginTop="10dp"
-            app:layout_constraintTop_toBottomOf="@id/img_avatar_song_ctr"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:progress="50"
             android:id="@+id/sb_time_song_ctr"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:progress="50"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/img_play_song_ctr" />
 
         <TextView
-            app:layout_constraintTop_toBottomOf="@id/sb_time_song_ctr"
-            app:layout_constraintStart_toStartOf="parent"
-            android:textStyle="bold"
-            android:textColor="#fff"
-            android:text="00:00"
             android:id="@+id/tv_time_song_current_ctr"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="00:00"
+            android:textColor="#fff"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/sb_time_song_ctr" />
 
         <TextView
-            app:layout_constraintTop_toBottomOf="@id/sb_time_song_ctr"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:textStyle="bold"
-            android:textColor="#fff"
-            android:text="04:25"
             android:id="@+id/tv_total_time_song_current_ctr"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="04:25"
+            android:textColor="#fff"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/sb_time_song_ctr" />
 
-        <TextView
-            android:id="@+id/tv_name_song_ctr"
-            android:layout_marginTop="5dp"
+
+        <ImageView
             app:layout_constraintTop_toBottomOf="@id/tv_time_song_current_ctr"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:textStyle="bold"
-            android:textColor="#fff"
+            android:id="@+id/img_big_avatar_song_ctr"
+            android:background="@drawable/ic_music"
+            tools:src="@tools:sample/avatars"
+            android:layout_width="150dp"
+            android:layout_height="150dp" />
+
+        <TextView
+            android:gravity="center_horizontal"
+            android:id="@+id/tv_name_song_ctr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:text="Hãy Trao Cho Anh"
+            android:textColor="#fff"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/img_big_avatar_song_ctr" />
+
+        <TextView
+            android:textSize="12sp"
+            android:gravity="center_horizontal"
+            android:id="@+id/tv_singer_song_ctr"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Sơn Tùng MTP"
+            android:textColor="#fff"
+            android:textStyle="italic"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_name_song_ctr" />
+
+        <ProgressBar
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:id="@+id/pb_loading_song_ctr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:id="@+id/img_remove_all_song_ctr"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_remove_all_song"/>
 
     </android.support.constraint.ConstraintLayout>
-
-
-</android.support.v4.widget.NestedScrollView>
+</android.support.constraint.ConstraintLayout>

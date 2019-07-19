@@ -5,10 +5,7 @@ import com.nathpath.practice.models.Song;
 
 import java.util.List;
 
-public interface MainActivityView {
-    void getAllProductSuccess(List<Product> products);
-    void getAllProductFailed(String err);
-
+public interface MusicOfflineFragmentView {
     void getAllSongSuccess(List<Song> songs);
     void getAllSongFailed(String err);
 }

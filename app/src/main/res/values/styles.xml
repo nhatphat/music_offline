@@ -6,12 +6,12 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 
-    <style name="SeekbarPupple" parent="AppTheme">
-        <item name="colorAccent">#a94bec</item>
+    <style name="SplashScreen" parent="AppTheme">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowBackground">@drawable/activity_splash_screen</item>
     </style>
 
 

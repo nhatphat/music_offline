@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/transparent">
+
+    <android.support.design.widget.AppBarLayout
+        android:background="@color/transparent"
+        android:backgroundTintMode="screen"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.v7.widget.CardView
+            android:layout_gravity="center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            app:cardBackgroundColor="#f6f6f5"
+            app:layout_scrollFlags="scroll|enterAlways">
+
+            <ImageView
+                android:id="@+id/img_reloadSong"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_refresh"
+                android:layout_width="30dp"
+                android:layout_height="30dp" />
+
+            <android.support.v7.widget.SearchView
+                android:layout_gravity="center_horizontal"
+                android:background="@color/transparent"
+                app:queryHint="@string/search_song"
+                app:searchIcon="@drawable/ic_search"
+                app:closeIcon="@drawable/ic_close"
+                app:voiceIcon="@drawable/ic_voice_search"
+                android:id="@+id/sv_searchSongOffline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <ImageView
+                android:id="@+id/img_playAllSongOffline"
+                android:layout_gravity="center_vertical|end"
+                android:src="@drawable/ic_play_all"
+                android:layout_width="30dp"
+                android:layout_height="30dp" />
+
+        </android.support.v7.widget.CardView>
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:background="@color/transparent"
+        android:id="@+id/srl_refreshMusicOffline"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <android.support.v7.widget.RecyclerView
+            android:orientation="vertical"
+            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            android:id="@+id/rvMainSong"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:listitem="@layout/item_song"/>
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+</android.support.design.widget.CoordinatorLayout>

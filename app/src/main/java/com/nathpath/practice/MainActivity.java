@@ -1,79 +1,64 @@
 package com.nathpath.practice;
 
-import android.Manifest;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
+import android.graphics.BlurMaskFilter;
 import android.graphics.Color;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Handler;
-import android.os.IBinder;
-import android.provider.Settings;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.BottomSheetBehavior;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
+import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.TabLayout;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.NestedScrollView;
-import android.support.v7.app.AlertDialog;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.karumi.dexter.Dexter;
-import com.karumi.dexter.PermissionToken;
-import com.karumi.dexter.listener.PermissionDeniedResponse;
-import com.karumi.dexter.listener.PermissionGrantedResponse;
-import com.karumi.dexter.listener.PermissionRequest;
-import com.karumi.dexter.listener.single.DialogOnDeniedPermissionListener;
-import com.karumi.dexter.listener.single.PermissionListener;
-import com.nathpath.practice.adapter.ProductAdapter;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.request.transition.Transition;
+import com.nathpath.practice.adapter.MainViewPagerAdapter;
 import com.nathpath.practice.adapter.SongAdapter;
-import com.nathpath.practice.callback.MainActivityView;
-import com.nathpath.practice.models.Product;
+import com.nathpath.practice.base.BaseActivity;
+import com.nathpath.practice.models.PageContent;
 import com.nathpath.practice.models.Song;
-import com.nathpath.practice.presenter.MainActivityPresenter;
+import com.nathpath.practice.presenter.MusicOfflineFragmentPresenter;
 import com.nathpath.practice.services.SongPlayerService;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements MainActivityView {
+public class MainActivity extends BaseActivity{
     private Toolbar tbHeader;
-    private RecyclerView rvMain;
-    private RecyclerView rvMainSong;
-    private List<Product> mProducts;
-    private List<Song> mSongs;
-    private ProductAdapter mProductAdapter;
-    private SongAdapter mSongAdapter;
-    private FloatingActionButton fabMain;
-    private MainActivityPresenter mPresenter;
 
     private BottomSheetBehavior mBottomSheetSongController;
-    private NestedScrollView mViewSongController;
+    private ConstraintLayout mViewSongController;
 
+    private ConstraintLayout cl_container_song_ctr;
+    private ProgressBar pb_loading_song_ctr;
     private ImageView img_avatar_song_ctr;
     private ImageView img_play_song_ctr;
     private ImageView img_prev_song_ctr;
@@ -82,9 +67,18 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
     private TextView tv_total_time_song_ctr;
     private TextView tv_current_time_song_ctr;
     private SeekBar sb_time_song_ctr;
+    private ImageView img_big_avatar_song_ctr;
+    private TextView tv_singer_song_ctr;
+    private ImageView img_remove_all_song_ctr;
 
+    private AppBarLayout appBarLayoutMain;
 
-    private boolean isPlaying = false;
+    private List<PageContent> pageContents;
+    private MainViewPagerAdapter mainViewPagerAdapter;
+    private ViewPager viewPagerMain;
+    private TabLayout tabLayoutMain;
+
+    public boolean isPlaying = false;
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -92,62 +86,196 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
             SongPlayerService.PayLoad payLoad = (SongPlayerService.PayLoad) data;
             initDataWithPayload(payLoad);
         }
-    };;
+    };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    protected int getLayoutResource() {
+        return R.layout.activity_main;
+    }
 
-        requestPermissionReadSdCard();
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.menu_main, menu);
+//
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        switch (item.getItemId()){
+//            case R.id.it_search:
+//                toast("dang search");
+//                return true;
+//        }
+//
+//        return false;
+//    }
 
-        initView();
-        initRecyclerView();
+    @Override
+    protected void initView(){
+        tbHeader = findViewById(R.id.tbHeader);
+        appBarLayoutMain = findViewById(R.id.ablMain);
+        cl_container_song_ctr = findViewById(R.id.cl_container_song_ctr);
+        pb_loading_song_ctr = findViewById(R.id.pb_loading_song_ctr);
+        mViewSongController = findViewById(R.id.bts_song_controller);
+        img_avatar_song_ctr = findViewById(R.id.img_avatar_song_ctr);
+        img_play_song_ctr = findViewById(R.id.img_play_song_ctr);
+        img_prev_song_ctr = findViewById(R.id.img_prev_song_ctr);
+        img_next_song_ctr = findViewById(R.id.img_next_song_ctr);
+        tv_name_song_ctr = findViewById(R.id.tv_name_song_ctr);
+        tv_current_time_song_ctr = findViewById(R.id.tv_time_song_current_ctr);
+        tv_total_time_song_ctr = findViewById(R.id.tv_total_time_song_current_ctr);
+        sb_time_song_ctr = findViewById(R.id.sb_time_song_ctr);
+        img_big_avatar_song_ctr = findViewById(R.id.img_big_avatar_song_ctr);
+        tv_singer_song_ctr = findViewById(R.id.tv_singer_song_ctr);
+        img_remove_all_song_ctr = findViewById(R.id.img_remove_all_song_ctr);
 
+        tabLayoutMain = findViewById(R.id.tl_tabMain);
+        viewPagerMain = findViewById(R.id.vp_contentMain);
+    }
+
+    @Override
+    protected void initData() {
         setSupportActionBar(tbHeader);
-        events();
-
-        Log.e("err", "onCreate");
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 broadcastReceiver, new IntentFilter(SongPlayerService.ACTION)
         );
 
+        expandAppbar(false);
         mBottomSheetSongController = BottomSheetBehavior.from(mViewSongController);
+        initTabAndViewPager();
 
-        mPresenter = new MainActivityPresenter(this, this);
-        mPresenter.findSongsInLocal();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
         sentEventToPlayerService(SongPlayerService.GET_CURRENT_LIST_SONG, null);
-        sentEventToPlayerService(SongPlayerService.GET_CURRENT_SONG, null);
+    }
+
+    private void initTabAndViewPager(){
+        pageContents = new ArrayList<>();
+        pageContents.add(new PageContent("Offline", R.drawable.ic_list_music, new MusicOfflineFragment()));
+        pageContents.add(new PageContent("Online", R.drawable.ic_music_online, new MusicOnlineFragment()));
+        mainViewPagerAdapter = new MainViewPagerAdapter(getSupportFragmentManager(), this, pageContents);
+        viewPagerMain.setAdapter(mainViewPagerAdapter);
+        viewPagerMain.setCurrentItem(0);
+        tabLayoutMain.setupWithViewPager(viewPagerMain);
+        for (int i = 0; i < pageContents.size(); i++) {
+            TabLayout.Tab tab = tabLayoutMain.getTabAt(i);
+            if(tab != null){
+                PageContent pageContent = pageContents.get(i);
+
+                View view = getLayoutInflater().inflate(R.layout.item_tab_layout, null);
+                ((ImageView)view.findViewById(R.id.img_icon_tab)).setImageResource(pageContent.getIcon());
+
+                TextView tvTitle = view.findViewById(R.id.tv_title_tab);
+                tvTitle.setText(pageContent.getTitle());
+                if(i == 0){
+                    tvTitle.setTextColor(Color.WHITE);
+                }
+
+                tab.setCustomView(view);
+            }
+        }
+    }
+
+    public void expandAppbar(boolean isExpand){
+        appBarLayoutMain.setExpanded(isExpand, false);
+    }
+
+    @Override
+    protected void event() {
+        tabLayoutMain.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                View view = tab.getCustomView();
+                if(view != null){
+                    ((TextView)view.findViewById(R.id.tv_title_tab)).setTextColor(Color.WHITE);
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+                View view = tab.getCustomView();
+                if(view != null){
+                    ((TextView)view.findViewById(R.id.tv_title_tab)).setTextColor(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
+        sb_time_song_ctr.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(fromUser) {
+                    sentEventToPlayerService(SongPlayerService.SEEK_TO, progress*1000);
+                    tv_current_time_song_ctr.setText(
+                            SongAdapter.convertDurationToTime(progress*1000)
+                    );
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        img_avatar_song_ctr.setOnClickListener(v -> {
+            toogleSongController();
+        });
+
+        img_play_song_ctr.setOnClickListener(v -> {
+            if(sb_time_song_ctr.isEnabled()) {
+                tooglePlayMusic();
+            }else{
+                toast("Không thể thao tác lúc này...");
+            }
+        });
+
+        img_prev_song_ctr.setOnClickListener(v -> {
+            if(sb_time_song_ctr.isEnabled()){
+                lockSongControl(true);
+                sentEventToPlayerService(SongPlayerService.PREV, null);
+            }else{
+                toast("Không thể thao tác lúc này...");
+            }
+        });
+
+        img_next_song_ctr.setOnClickListener(v -> {
+            if(sb_time_song_ctr.isEnabled()){
+                lockSongControl(true);
+                sentEventToPlayerService(SongPlayerService.NEXT, null);
+            }else{
+                toast("Không thể thao tác lúc này...");
+            }
+        });
+
+        img_remove_all_song_ctr.setOnClickListener(v -> {
+            sentEventToPlayerService(SongPlayerService.UNSET_LIST_SONG, null);
+        });
     }
 
     private void initDataWithPayload(SongPlayerService.PayLoad payLoad){
         if(payLoad != null){
             switch (payLoad.getKey()){
-                case SongPlayerService.GET_CURRENT_SONG:
-                    Song song = (Song) payLoad.getData();
-                    setInfoCurrentSong(song);
-                    break;
-
                 case SongPlayerService.GET_CURRENT_LIST_SONG:
-                    boolean hasList = (boolean) payLoad.getData();
-                    if(!hasList && (mSongs.size() > 0)){
-                        sentEventToPlayerService(SongPlayerService.UPDATE_LIST_SONG, mSongs);
+                    List<Song> hasList = (List<Song>) payLoad.getData();
+                    if(hasList.size() > 0){
+                        showRemoveAllListControl(true);
+                    }else{
+                        showRemoveAllListControl(false);
                     }
                     break;
-
                 case SongPlayerService.GET_PROGRESS:
                     int progress = (int) payLoad.getData();
+                    lockSongControl(false);
                     setProgressTime(progress);
                     break;
 
@@ -167,42 +295,116 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
                         tv_total_time_song_ctr.setText("00:00");
                     }
                     break;
+                case SongPlayerService.SET_SONG_ONLINE_ERROR:
+                    String err = (String) payLoad.getData();
+                    //toast(err);
+                    Log.e("err", err);
+                    break;
+                case SongPlayerService.SET_LOCK_SONG_CONTROL:
+                    boolean lock = (boolean) payLoad.getData();
+                    lockSongControl(lock);
+                    break;
+                case SongPlayerService.UNSET_LIST_SONG:
+                    toast("Danh sách phát trống.");
+                    showRemoveAllListControl(false);
+                    break;
             }
         }
     }
 
-    private void setInfoCurrentSong(Song song){
+    public boolean checkListSongExists() {
+        return img_remove_all_song_ctr != null
+                && img_remove_all_song_ctr.getVisibility() == View.VISIBLE;
+
+    }
+
+    public void showRemoveAllListControl(boolean isShow){
+        if(img_remove_all_song_ctr != null){
+            if(isShow){
+                img_remove_all_song_ctr.setVisibility(View.VISIBLE);
+            }else{
+                img_remove_all_song_ctr.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    public void lockSongControl(boolean isLock){
+        if(sb_time_song_ctr == null){
+            return;
+        }
+
+        sb_time_song_ctr.setEnabled(!isLock);
+        if(isLock){
+            pb_loading_song_ctr.setVisibility(View.VISIBLE);
+        }else{
+            pb_loading_song_ctr.setVisibility(View.GONE);
+        }
+    }
+
+    public void setInfoCurrentSongControl(Song song){
         if(song != null && tv_name_song_ctr != null){
             tv_name_song_ctr.setText(song.getName());
-            tv_total_time_song_ctr.setText(mSongAdapter.convertDurationToTime(Long.parseLong(song.getTime())));
-            sb_time_song_ctr.setMax(Integer.valueOf(song.getTime()) / 1000);
+            tv_singer_song_ctr.setText(song.getSinger());
+
+            if(song.getTime() != null){
+                tv_total_time_song_ctr.setText(SongAdapter.convertDurationToTime(Long.parseLong(song.getTime())));
+                sb_time_song_ctr.setMax(Integer.valueOf(song.getTime()) / 1000);
+            }else{
+                tv_total_time_song_ctr.setText("00:00");
+                sb_time_song_ctr.setMax(100);
+            }
+
             sb_time_song_ctr.setProgress(0);
 
-            if(getApplication() != null){
-                Glide.with(getApplication())
-                        .load(song.getAvatar())
-                        .into(img_avatar_song_ctr);
+
+            Log.e("avattatatar: ", song.getAvatar());
+            cl_container_song_ctr.setBackgroundResource(R.drawable.ic_music);
+            if(song.getAvatar().equals("no_image")){
+                img_avatar_song_ctr.setImageResource(R.drawable.ic_music);
+                img_big_avatar_song_ctr.setImageResource(R.drawable.ic_music);
+            }else{
+                if(getApplication() != null) {
+                    RequestBuilder image = Glide.with(getApplication()).load(song.getAvatar());
+                    image.into(img_avatar_song_ctr);
+                    image.into(img_big_avatar_song_ctr);
+                    image.into(new SimpleTarget() {
+                        @Override
+                        public void onResourceReady(@NonNull Object resource, @Nullable Transition transition) {
+                                cl_container_song_ctr.setBackground((Drawable) resource);
+                        }
+                    });
+                }
             }
         }
     }
 
-//    private void setCurrentSong(Song song){
-//        if(song != null){
-//            setInfoCurrentSong(song);
-//        }else if(mSongs.size() > 0){
-//            //set default song
-//            Song song_default = mSongs.get(0);
-//            sentEventToPlayerService(SongPlayerService.PREPARE_SONG, song_default);
-//            setInfoCurrentSong(song_default);
-//        }
-//    }
+    public void updateCurrentSong(Song song){
+        if(song != null){
+            toogleImageButtonPlay();
+            setInfoCurrentSongControl(song);
+            lockSongControl(true);
+            openSongController(true);
+        }
+    }
 
     private void setProgressTime(int progress){
         if(sb_time_song_ctr != null){
             sb_time_song_ctr.setProgress(progress/1000);
             tv_current_time_song_ctr.setText(
-                    mSongAdapter.convertDurationToTime(progress)
+                    SongAdapter.convertDurationToTime(progress)
             );
+        }
+    }
+
+    public void openSongController(boolean isShow){
+        if(mBottomSheetSongController == null){
+            return;
+        }
+
+        if(isShow){
+            mBottomSheetSongController.setState(BottomSheetBehavior.STATE_EXPANDED);
+        }else{
+            mBottomSheetSongController.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
     }
 
@@ -212,149 +414,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
         }
 
         if(mBottomSheetSongController.getState() == BottomSheetBehavior.STATE_COLLAPSED){
-            mBottomSheetSongController.setState(BottomSheetBehavior.STATE_EXPANDED);
+            openSongController(true);
         }else if(mBottomSheetSongController.getState() == BottomSheetBehavior.STATE_EXPANDED){
-            mBottomSheetSongController.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            openSongController(false);
         }
-    }
-
-    private boolean checkPermissionReadSdCard(){
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestPermissionReadSdCard(){
-        if(checkPermissionReadSdCard()){
-            return;
-        }
-
-        Dexter.withActivity(this)
-                .withPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-                .withListener(new PermissionListener() {
-                    @Override
-                    public void onPermissionGranted(PermissionGrantedResponse response) {
-                        if(mPresenter != null){
-                            mPresenter.findSongsInLocal();
-                        }
-                    }
-
-                    @Override
-                    public void onPermissionDenied(PermissionDeniedResponse response) {
-                        if(response.isPermanentlyDenied()){
-                            showSettingsDialog();
-                        }
-                    }
-
-                    @Override
-                    public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
-                        token.continuePermissionRequest();
-                    }
-                }).check();
-    }
-
-    private void showSettingsDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("Cần quyền truy cập bộ nhớ");
-        builder.setMessage("Vui lòng cấp quyền mới xài được app nha...");
-        builder.setPositiveButton("GOTO SETTINGS", (dialog, which) -> {
-            dialog.cancel();
-            openSettings();
-        });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-        builder.show();
-    }
-
-    private void openSettings() {
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        Uri uri = Uri.fromParts("package", getPackageName(), null);
-        intent.setData(uri);
-        startActivityForResult(intent, 101);
-    }
-
-    private void initRecyclerView(){
-        rvMain = findViewById(R.id.rvMain);
-        rvMainSong = findViewById(R.id.rvMainSong);
-        rvMain.setHasFixedSize(true);
-        rvMainSong.setHasFixedSize(true);
-        rvMain.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rvMainSong.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-
-        mProducts = new ArrayList<>();
-        mSongs = new ArrayList<>();
-        mProductAdapter = new ProductAdapter(this, mProducts);
-        mSongAdapter = new SongAdapter(this, mSongs);
-        rvMain.setAdapter(mProductAdapter);
-        rvMainSong.setAdapter(mSongAdapter);
-
-    }
-
-    private void initView(){
-        tbHeader = findViewById(R.id.tbHeader);
-        fabMain = findViewById(R.id.fabMain);
-        mViewSongController = findViewById(R.id.bts_song_controller);
-        img_avatar_song_ctr = findViewById(R.id.img_avatar_song_ctr);
-        img_play_song_ctr = findViewById(R.id.img_play_song_ctr);
-        img_prev_song_ctr = findViewById(R.id.img_prev_song_ctr);
-        img_next_song_ctr = findViewById(R.id.img_next_song_ctr);
-        tv_name_song_ctr = findViewById(R.id.tv_name_song_ctr);
-        tv_current_time_song_ctr = findViewById(R.id.tv_time_song_current_ctr);
-        tv_total_time_song_ctr = findViewById(R.id.tv_total_time_song_current_ctr);
-        sb_time_song_ctr = findViewById(R.id.sb_time_song_ctr);
-    }
-
-    private void events(){
-        sb_time_song_ctr.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(fromUser) {
-                    sentEventToPlayerService(SongPlayerService.SEEK_TO, progress*1000);
-                    tv_current_time_song_ctr.setText(
-                            mSongAdapter.convertDurationToTime(progress*1000)
-                    );
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-        mSongAdapter.setOnItemSongClickListener((view, position) -> {
-            Song song = mSongs.get(position);
-            sentEventToPlayerService(SongPlayerService.SET_SONG, song);
-            isPlaying = true;
-            toogleImageButtonPlay();
-            setInfoCurrentSong(song);
-        });
-
-        fabMain.setOnClickListener(v -> {
-            if(mPresenter != null){
-                //mPresenter.getAllProduct();
-                toast("Nghe nhạc thư giãn haha");
-            }
-        });
-
-        img_avatar_song_ctr.setOnClickListener(v -> {
-            toogleSongController();
-        });
-
-        img_play_song_ctr.setOnClickListener(v -> {
-            tooglePlayMusic();
-        });
-
-        img_prev_song_ctr.setOnClickListener(v -> {
-            sentEventToPlayerService(SongPlayerService.PREV, null);
-        });
-
-        img_next_song_ctr.setOnClickListener(v -> {
-            sentEventToPlayerService(SongPlayerService.NEXT, null);
-        });
     }
 
     private void toogleImageButtonPlay(){
@@ -376,46 +439,23 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
         toogleImageButtonPlay();
     }
 
-    private <D> void sentEventToPlayerService(int event, D data){
+    public <D> void sentEventToPlayerService(int event, D data){
         Intent intent = new Intent(this, SongPlayerService.class);
         intent.putExtra(SongPlayerService.PAYLOAD, new SongPlayerService.PayLoad(event, data));
         startService(intent);
     }
 
-    private void toast(String mess){
-        Toast toast = Toast.makeText(this, mess, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.CENTER, 0, 0);
-        toast.show();
-    }
-
     @Override
-    public void getAllProductSuccess(List<Product> products) {
-        if(products.size() > 0 && mProductAdapter != null && mProducts != null){
-            mProducts.clear();
-            mProducts.addAll(products);
-            mProductAdapter.notifyDataSetChanged();
+    protected void onDestroy() {
+        super.onDestroy();
+        if(broadcastReceiver != null){
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
         }
     }
 
     @Override
-    public void getAllProductFailed(String err) {
-        toast(err);
-    }
-
-    @Override
-    public void getAllSongSuccess(List<Song> songs) {
-        if(songs.size() > 0 ){
-            mSongs.clear();
-            mSongs.addAll(songs);
-
-            mSongAdapter.notifyDataSetChanged();
-
-            sentEventToPlayerService(SongPlayerService.UPDATE_LIST_SONG, mSongs);
-        }
-    }
-
-    @Override
-    public void getAllSongFailed(String err) {
-        toast(err);
+    public void onBackPressed() {
+        openSongController(false);
+        //none
     }
 }

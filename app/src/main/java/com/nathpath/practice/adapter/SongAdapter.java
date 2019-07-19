@@ -2,8 +2,10 @@ package com.nathpath.practice.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +18,8 @@ import com.nathpath.practice.models.Song;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
@@ -37,13 +41,31 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Song song = songs.get(position);
-        Glide.with(context).load(song.getAvatar()).into(holder.imgSongAvatar);
+        if(song == null){
+            return;
+        }
+
+        holder.imgSongAvatar.setImageResource(R.drawable.ic_music);
+        if(!song.getAvatar().equals("no_image")) {
+            Glide.with(context).load(song.getAvatar()).into(holder.imgSongAvatar);
+        }
         holder.tvSongName.setText(song.getName());
-        holder.tvSongTime.setText(convertDurationToTime(Long.parseLong(song.getTime())));
+        holder.tvSongSingerName.setText(song.getSinger());
+        if(song.getPageOnline() != null){
+            holder.imgDownload.setVisibility(View.VISIBLE);
+            holder.imgDownload.setOnClickListener(v -> {
+                if(onItemSongClickListener != null){
+                    onItemSongClickListener.OnDownloadClick(song);
+                }
+            });
+        }
+        if(song.getTime() != null) {
+            holder.tvSongTime.setText(convertDurationToTime(Long.parseLong(song.getTime())));
+        }
     }
 
     @SuppressLint("DefaultLocale")
-    public String convertDurationToTime(long duration){
+    public static String convertDurationToTime(long duration){
         int hh = 0;
         int mm = 0;
         int ss = 0;
@@ -59,7 +81,34 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
             ss = 1;
         }
 
+        if(hh == 0){
+            return String.format("%02d:%02d", mm, ss);
+        }
+
         return String.format("%02d:%02d:%02d", hh, mm, ss);
+    }
+
+    public void moveItem(int start, int end){
+        if (start < end) {
+            for (int i = start; i < end; i++) {
+                Collections.swap(songs, i, i + 1);
+            }
+        } else {
+            for (int i = start; i > end; i--) {
+                Collections.swap(songs, i, i - 1);
+            }
+        }
+        notifyItemMoved(start, end);
+    }
+
+    public void removeItem(int position){
+        songs.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    public boolean deleteSong(String filename) {
+        File file = new File(filename);
+        return file.exists() && file.delete();
     }
 
     @Override
@@ -67,17 +116,22 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         return songs.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder{
         ImageView imgSongAvatar;
+        ImageView imgDownload;
         TextView tvSongName;
+        TextView tvSongSingerName;
         TextView tvSongTime;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
             imgSongAvatar = itemView.findViewById(R.id.imgSongAvatar);
+            imgDownload = itemView.findViewById(R.id.img_download_song);
             tvSongName = itemView.findViewById(R.id.tvSongName);
+            tvSongSingerName = itemView.findViewById(R.id.tvSongSingerName);
             tvSongTime = itemView.findViewById(R.id.tvSongTime);
+
 
             itemView.setOnClickListener(v -> {
                 if(onItemSongClickListener != null){
@@ -97,5 +151,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
     public interface OnItemSongClickListener{
         void OnItemSongClick(View view, int position);
+        void OnDownloadClick(Song song);
     }
 }
