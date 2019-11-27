@@ -19,6 +19,7 @@ public class Song implements Serializable{
     private String singer;
     @SerializedName("page_mp3")
     private String page_online;
+    private boolean isSelected = false;
 
     public Song(int id, String name, String singer, String data, String time, String avatar) {
         this.id = id;
@@ -34,6 +35,11 @@ public class Song implements Serializable{
         this.singer = singer;
         this.avatar = avatar;
         this.page_online = page_online;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     public int getId() {
@@ -90,5 +96,13 @@ public class Song implements Serializable{
 
     public void setPageOnline(String page_online) {
         this.page_online = page_online;
+    }
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public void setSelected(boolean selected) {
+        isSelected = selected;
     }
 }

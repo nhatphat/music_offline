@@ -5,12 +5,14 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.companion.CompanionDeviceManager;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.nathpath.practice.MainActivity;
 import com.nathpath.practice.R;
@@ -56,7 +58,8 @@ public class SongPlayerService extends Service
     public static final int SET_SONG_ONLINE = 14;
     public static final int SET_SONG_ONLINE_ERROR = 15;
     public static final int SET_LOCK_SONG_CONTROL = 16;
-    public static final int UNSET_LIST_SONG = 17;
+    public static final int SET_VOLUME = 17;
+    public static final int UNSET_LIST_SONG = 18;
 
 
     private MediaPlayer mediaPlayer;
@@ -230,6 +233,14 @@ public class SongPlayerService extends Service
                     songList.clear();
                     sendLocationBroadcast(UNSET_LIST_SONG, null);
                     return;
+                }
+                break;
+            case SET_VOLUME:
+                boolean increase = (boolean) payLoad.getData();
+                if(increase){
+                    increaseVolume();
+                }else{
+                    decreaseVolume();
                 }
                 break;
         }
@@ -407,6 +418,20 @@ public class SongPlayerService extends Service
 //            mediaPlayer.release();
         }
         return false;
+    }
+
+    private void increaseVolume(){
+        AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        if(mediaPlayer != null && audioManager != null) {
+            audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, AudioManager.FLAG_PLAY_SOUND);
+        }
+    }
+
+    private void decreaseVolume(){
+        AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        if(mediaPlayer != null && audioManager != null) {
+            audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, AudioManager.FLAG_PLAY_SOUND);
+        }
     }
 
     @Override

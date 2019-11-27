@@ -7,11 +7,13 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -33,6 +35,8 @@ import com.nathpath.practice.presenter.MusicOfflineFragmentPresenter;
 import com.nathpath.practice.services.SongPlayerService;
 import com.nathpath.practice.utils.CompositeDisposableManager;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +51,6 @@ public class MusicOfflineFragment extends BaseMusicFragment
     private SearchView sv_searchSongOffline;
 
     private MusicOfflineFragmentPresenter mPresenter;
-    private View currentViewSongSelected;
 
     private List<Song> mSongCopy;
 
@@ -69,7 +72,7 @@ public class MusicOfflineFragment extends BaseMusicFragment
     protected void OnViewCreated(View view) {
         super.OnViewCreated(view);
 
-        //init touch event for recycler haha
+        //init touch event for recycler
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(
                 new ItemRecyclerViewTouchHelperCallback(this, context)
         );
@@ -109,17 +112,30 @@ public class MusicOfflineFragment extends BaseMusicFragment
                 Song song = (Song) payLoad.getData();
                 if(song == null && mSongs.size() > 0){
                     song = mSongs.get(0);
+
                     context.lockSongControl(false);
-                    context.sentEventToPlayerService(SongPlayerService.PREPARE_SONG, mSongs.get(0));
+                    context.sentEventToPlayerService(SongPlayerService.PREPARE_SONG, song);
                 }
 
-                context.setInfoCurrentSongControl(song);
                 int itemIndex = findPositionItemSongBySong(song);
+                if(itemIndex == -1){
+                    return;
+                }
+                if(currentSong != -1) {
+                    oldSong = currentSong;
+                    mSongs.get(oldSong).setSelected(false);
+                    mSongAdapter.notifyItemChanged(oldSong);
+                }
+
+                currentSong = itemIndex;
+                song = mSongs.get(currentSong);
+                song.setSelected(true);
+                mSongAdapter.notifyItemChanged(currentSong);
+
+                context.setInfoCurrentSongControl(song);
+
                 if(rvMainSong != null && itemIndex != -1) {
                     rvMainSong.smoothScrollToPosition(itemIndex);
-                    updateCurrentIconMusicPlaying(
-                            rvMainSong.getLayoutManager().findViewByPosition(itemIndex)
-                    );
                 }
                 break;
 
@@ -167,15 +183,23 @@ public class MusicOfflineFragment extends BaseMusicFragment
         mSongAdapter.setOnItemSongClickListener(new SongAdapter.OnItemSongClickListener() {
             @Override
             public void OnItemSongClick(View view, int position) {
-                Song song = mSongs.get(position);
+                playSongSelectedAt(position);
 
-                context.sentEventToPlayerService(SongPlayerService.SET_SONG, song);
-                context.sentEventToPlayerService(SongPlayerService.UPDATE_CURRENT_INDEX_SONG, position);
-
-                context.isPlaying = true;
-                context.updateCurrentSong(song);
-
-                updateCurrentIconMusicPlaying(view);
+//                Song song = mSongs.get(position);
+//
+//                oldSong = currentSong;
+//                mSongs.get(oldSong).setSelected(false);
+//                mSongAdapter.notifyItemChanged(oldSong);
+//
+//                currentSong = position;
+//                song.setSelected(true);
+//                mSongAdapter.notifyItemChanged(currentSong);
+//
+//                context.sentEventToPlayerService(SongPlayerService.SET_SONG, song);
+//                context.sentEventToPlayerService(SongPlayerService.UPDATE_CURRENT_INDEX_SONG, position);
+//
+//                context.isPlaying = true;
+//                context.updateCurrentSong(song);
             }
 
             @Override
@@ -221,37 +245,6 @@ public class MusicOfflineFragment extends BaseMusicFragment
         toast("Đang cập nhật danh sách");
         CompositeDisposableManager.addDisposable(mPresenter.findSongsInLocal());
         srl_refreshMusic.setRefreshing(true);
-    }
-
-    private void updateCurrentIconMusicPlaying(View view){
-        if(view == null){
-            return;
-        }
-
-        if(view == currentViewSongSelected){
-            return;
-        }
-
-        GifImageView playing = view.findViewById(R.id.img_song_playing);
-        playing.setBackgroundResource(R.drawable.ic_music_playing);
-        if(currentViewSongSelected != null){
-            playing = currentViewSongSelected.findViewById(R.id.img_song_playing);
-            playing.setBackgroundResource(R.color.transparent);
-        }
-        currentViewSongSelected = view;
-    }
-
-    private int findPositionItemSongBySong(Song song){
-
-        if(rvMainSong != null && song != null){
-            context.expandAppbar(false);
-            for (int i = 0; i < mSongs.size(); i++) {
-                if(song.getId() == mSongs.get(i).getId()){
-                    return i;
-                }
-            }
-        }
-        return -1;
     }
 
     private boolean checkPermissionReadSdCard(){
@@ -319,6 +312,11 @@ public class MusicOfflineFragment extends BaseMusicFragment
     @Override
     public void onMove(int startPosition, int endPosition) {
         mSongAdapter.moveItem(startPosition, endPosition);
+
+        if(currentSong == startPosition){
+            currentSong = endPosition;
+        }
+
         if(context.checkListSongExists()){
             context.sentEventToPlayerService(SongPlayerService.UPDATE_CURRENT_INDEX_SONG, endPosition);
             context.sentEventToPlayerService(SongPlayerService.UPDATE_LIST_SONG, mSongs);
@@ -332,7 +330,8 @@ public class MusicOfflineFragment extends BaseMusicFragment
         ((TextView)view.findViewById(R.id.tvSongName)).setText(song.getName());
         ((TextView)view.findViewById(R.id.tvSongSingerName)).setText(song.getSinger());
         ((TextView)view.findViewById(R.id.tvSongTime)).setText(SongAdapter.convertDurationToTime(Long.parseLong(song.getTime())));
-
+        view.findViewById(R.id.img_download_song).setVisibility(View.INVISIBLE);
+        view.findViewById(R.id.img_song_playing).setVisibility(View.INVISIBLE);
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
                 .setIcon(R.drawable.ic_delete_red)
                 .setTitle("Xác nhận xóa")

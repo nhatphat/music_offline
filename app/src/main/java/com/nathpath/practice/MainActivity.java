@@ -1,5 +1,6 @@
 package com.nathpath.practice;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -22,9 +23,11 @@ import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -42,6 +45,7 @@ import com.bumptech.glide.request.transition.Transition;
 import com.nathpath.practice.adapter.MainViewPagerAdapter;
 import com.nathpath.practice.adapter.SongAdapter;
 import com.nathpath.practice.base.BaseActivity;
+import com.nathpath.practice.callback.SwipeTouchListener;
 import com.nathpath.practice.models.PageContent;
 import com.nathpath.practice.models.Song;
 import com.nathpath.practice.presenter.MusicOfflineFragmentPresenter;
@@ -50,6 +54,12 @@ import com.nathpath.practice.services.SongPlayerService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.observers.ResourceObserver;
 
 public class MainActivity extends BaseActivity{
     private Toolbar tbHeader;
@@ -136,6 +146,7 @@ public class MainActivity extends BaseActivity{
 
     @Override
     protected void initData() {
+
         setSupportActionBar(tbHeader);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
@@ -180,6 +191,7 @@ public class MainActivity extends BaseActivity{
         appBarLayoutMain.setExpanded(isExpand, false);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void event() {
         tabLayoutMain.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -260,6 +272,28 @@ public class MainActivity extends BaseActivity{
         img_remove_all_song_ctr.setOnClickListener(v -> {
             sentEventToPlayerService(SongPlayerService.UNSET_LIST_SONG, null);
         });
+
+        img_big_avatar_song_ctr.setOnTouchListener(new SwipeTouchListener(this){
+            @Override
+            public void onSwipeTop() {
+                sentEventToPlayerService(SongPlayerService.SET_VOLUME, true);
+            }
+
+            @Override
+            public void onSwipeBottom() {
+                sentEventToPlayerService(SongPlayerService.SET_VOLUME, false);
+            }
+
+            @Override
+            public void onSwipeLeft() {
+                sentEventToPlayerService(SongPlayerService.SET_VOLUME, false);
+            }
+
+            @Override
+            public void onSwipeRight() {
+                sentEventToPlayerService(SongPlayerService.SET_VOLUME, true);
+            }
+        });
     }
 
     private void initDataWithPayload(SongPlayerService.PayLoad payLoad){
@@ -307,6 +341,10 @@ public class MainActivity extends BaseActivity{
                 case SongPlayerService.UNSET_LIST_SONG:
                     toast("Danh sách phát trống.");
                     showRemoveAllListControl(false);
+                    break;
+                case SongPlayerService.GET_CURRENT_SONG:
+                    Song song = (Song) payLoad.getData();
+                    setInfoCurrentSongControl(song);
                     break;
             }
         }
@@ -456,6 +494,6 @@ public class MainActivity extends BaseActivity{
     @Override
     public void onBackPressed() {
         openSongController(false);
-        //none
+//        super.onBackPressed();
     }
 }

@@ -6,7 +6,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:cardBackgroundColor="@color/click_effect"
     android:layout_margin="5dp"
-    app:cardCornerRadius="10dp">
+    app:cardCornerRadius="10dp"
+    android:id="@+id/cvSongGroup">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
@@ -66,22 +67,21 @@
             android:layout_height="wrap_content" />
 
         <pl.droidsonroids.gif.GifImageView
-            android:layout_marginStart="5dp"
-            app:layout_constraintStart_toEndOf="@id/tvSongTime"
+            app:layout_constraintStart_toEndOf="@id/img_download_song"
             app:layout_constraintTop_toBottomOf="@id/tvSongSingerName"
             app:layout_constraintVertical_bias="1"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:scaleType="fitStart"
+            android:scaleType="fitEnd"
             android:scaleY="3"
             android:id="@+id/img_song_playing"
-            android:src="@color/transparent"
+            android:background="@drawable/ic_music_playing"
             android:layout_width="wrap_content"
             android:layout_height="25dp" />
 
         <ImageView
-            android:visibility="gone"
-            android:layout_marginEnd="55dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="visible"
+            android:layout_marginStart="15dp"
+            app:layout_constraintStart_toEndOf="@id/tvSongTime"
             app:layout_constraintBottom_toBottomOf="parent"
             android:id="@+id/img_download_song"
             android:layout_width="30dp"

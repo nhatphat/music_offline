@@ -26,6 +26,9 @@ public abstract class BaseMusicFragment extends BaseFragment{
     protected SongAdapter mSongAdapter;
     protected MainActivity context;
 
+    protected int oldSong = -1;
+    protected int currentSong = -1;
+
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -79,5 +82,43 @@ public abstract class BaseMusicFragment extends BaseFragment{
             mSongs.addAll(songList);
             mSongAdapter.notifyDataSetChanged();
         }
+    }
+
+    protected int findPositionItemSongBySong(Song song){
+
+        if(rvMainSong != null && song != null){
+            context.expandAppbar(false);
+            for (int i = 0; i < mSongs.size(); i++) {
+                if(song.getId() == mSongs.get(i).getId() || song.hashCode() == mSongs.get(i).hashCode()){
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    protected void playSongSelectedAt(int position){
+        Song song = mSongs.get(position);
+
+        try{
+            if(currentSong == position && oldSong != -1){
+                context.openSongController(true);
+                return;
+            }
+
+            oldSong = currentSong;
+            mSongs.get(oldSong).setSelected(false);
+            mSongAdapter.notifyItemChanged(oldSong);
+        }catch (Exception e){}
+
+        currentSong = position;
+        song.setSelected(true);
+        mSongAdapter.notifyItemChanged(currentSong);
+
+        context.sentEventToPlayerService(SongPlayerService.SET_SONG, song);
+        context.sentEventToPlayerService(SongPlayerService.UPDATE_CURRENT_INDEX_SONG, position);
+
+        context.isPlaying = true;
+        context.updateCurrentSong(song);
     }
 }

@@ -22,6 +22,8 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
+import pl.droidsonroids.gif.GifImageView;
+
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     private Context context;
     private List<Song> songs;
@@ -41,27 +43,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Song song = songs.get(position);
-        if(song == null){
-            return;
-        }
-
-        holder.imgSongAvatar.setImageResource(R.drawable.ic_music);
-        if(!song.getAvatar().equals("no_image")) {
-            Glide.with(context).load(song.getAvatar()).into(holder.imgSongAvatar);
-        }
-        holder.tvSongName.setText(song.getName());
-        holder.tvSongSingerName.setText(song.getSinger());
-        if(song.getPageOnline() != null){
-            holder.imgDownload.setVisibility(View.VISIBLE);
-            holder.imgDownload.setOnClickListener(v -> {
-                if(onItemSongClickListener != null){
-                    onItemSongClickListener.OnDownloadClick(song);
-                }
-            });
-        }
-        if(song.getTime() != null) {
-            holder.tvSongTime.setText(convertDurationToTime(Long.parseLong(song.getTime())));
-        }
+        holder.bindData(song);
     }
 
     @SuppressLint("DefaultLocale")
@@ -116,7 +98,13 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         return songs.size();
     }
 
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder{
+        GifImageView imgPlaying;
         ImageView imgSongAvatar;
         ImageView imgDownload;
         TextView tvSongName;
@@ -126,6 +114,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         public ViewHolder(View itemView) {
             super(itemView);
 
+            imgPlaying = itemView.findViewById(R.id.img_song_playing);
             imgSongAvatar = itemView.findViewById(R.id.imgSongAvatar);
             imgDownload = itemView.findViewById(R.id.img_download_song);
             tvSongName = itemView.findViewById(R.id.tvSongName);
@@ -138,6 +127,45 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
                     onItemSongClickListener.OnItemSongClick(itemView, getAdapterPosition());
                 }
             });
+        }
+
+        public void bindData(Song song){
+            if(song == null){
+                return;
+            }
+
+            //
+            imgSongAvatar.setBackgroundResource(R.drawable.ic_music);
+            if(!song.getAvatar().equals("no_image")) {
+                Glide.with(context).load(song.getAvatar()).into(imgSongAvatar);
+            }else{
+                imgSongAvatar.setImageResource(R.drawable.ic_music);
+//                Log.e("err", "image not found");
+            }
+            //
+            tvSongName.setText(song.getName());
+            tvSongSingerName.setText(song.getSinger());
+            //
+            if(song.getPageOnline() != null){
+                imgDownload.setVisibility(View.VISIBLE);
+                imgDownload.setOnClickListener(v -> {
+                    if(onItemSongClickListener != null){
+                        onItemSongClickListener.OnDownloadClick(song);
+                    }
+                });
+            }else{
+                imgDownload.setVisibility(View.INVISIBLE);
+            }
+            if(song.getTime() != null) {
+                tvSongTime.setText(convertDurationToTime(Long.parseLong(song.getTime())));
+            }
+
+            //
+            if(song.isSelected()){
+                imgPlaying.setVisibility(View.VISIBLE);
+            }else{
+                imgPlaying.setVisibility(View.INVISIBLE);
+            }
         }
     }
 

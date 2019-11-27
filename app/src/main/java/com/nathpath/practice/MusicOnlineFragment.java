@@ -14,6 +14,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -111,10 +112,23 @@ public class MusicOnlineFragment extends BaseMusicFragment implements MusicOnlin
         mSongAdapter.setOnItemSongClickListener(new SongAdapter.OnItemSongClickListener() {
             @Override
             public void OnItemSongClick(View view, int position) {
-                Song song = mSongs.get(position);
-                context.sentEventToPlayerService(SongPlayerService.SET_SONG_ONLINE, song);
-                context.sentEventToPlayerService(SongPlayerService.UPDATE_CURRENT_INDEX_SONG, position);
-                context.updateCurrentSong(song);
+                playSongSelectedAt(position);
+
+//                Song song = mSongs.get(position);
+//
+//                oldSong = currentSong;
+//                mSongs.get(oldSong).setSelected(false);
+//                mSongAdapter.notifyItemChanged(oldSong);
+//
+//                currentSong = position;
+//                song.setSelected(true);
+//                mSongAdapter.notifyItemChanged(currentSong);
+//
+//                context.sentEventToPlayerService(SongPlayerService.SET_SONG, song);
+//                context.sentEventToPlayerService(SongPlayerService.UPDATE_CURRENT_INDEX_SONG, position);
+//
+//                context.isPlaying = true;
+//                context.updateCurrentSong(song);
             }
 
             @Override
